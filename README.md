@@ -6,12 +6,12 @@ Projeto de estudo desenvolvido em Java para análise e diagnóstico de ECU.
 
 Desenvolver uma aplicação para estudar a comunicação e análise de dados de uma ECU automotiva, utilizando o Kadett como projeto de referência.
 
-Tecnologias
+## Tecnologias
 
 - Java
 - Git
 - GitHub
-
+  
 ## Status
 
 🚧 Em desenvolvimento

@@ -1,25 +1,56 @@
 public class LinhaHex {
 
-    String endereco = "";
-    String bau = "";
-    String trunk = "";
+    public static final int BYTES_POR_LINHA = 16;
+    private static final int BYTES_POR_GRUPO = 8;
 
-        public LinhaHex(String endereco, String bau, String trunk){
-            this.endereco = endereco;
-            this.bau = bau;
-            this.trunk = trunk;
-        }
+    private final int endereco;
+    private final byte[] bytes;
 
-        public String formatarLinha(){
-          return String.format("%-10s %-50s %s", endereco, bau, trunk);
+    public LinhaHex(int endereco, byte[] bytes) {
+        if (endereco < 0) {
+            throw new IllegalArgumentException("Endereço não pode ser negativo: " + endereco);
         }
-        public static void main(String[] args) {
-            LinhaHex linha = new LinhaHex("00000000", "48 65 6C 6C 6F", "Hello");
-            LinhaHex linha2 = new LinhaHex("0000002", "41 42 43", "ABC");
-            System.out.println(linha.formatarLinha());
-            System.out.println(linha2.formatarLinha());
+        if (bytes == null || bytes.length == 0 || bytes.length > BYTES_POR_LINHA) {
+            throw new IllegalArgumentException(
+                    "Uma linha precisa ter de 1 a " + BYTES_POR_LINHA + " bytes");
         }
-        public static String cabecalho(){
-            return String.format("%-10s %-50s %s", "ENDEREÇO", "HEX", "ASCII");
+        this.endereco = endereco;
+        this.bytes = bytes.clone(); 
+    }
+
+    public String getEndereco() {
+        return String.format("%08X", endereco);
+    }
+
+    public String getHex() {
+        StringBuilder hex = new StringBuilder();
+        for (int i = 0; i < bytes.length; i++) {
+            hex.append(String.format("%02X", bytes[i] & 0xFF)).append(' ');
+            if (i + 1 == BYTES_POR_GRUPO) {
+                hex.append("| ");
+            }
         }
+        return hex.toString();
+    }
+
+    public String getAscii() {
+        StringBuilder ascii = new StringBuilder();
+        for (byte b : bytes) {
+            int valor = b & 0xFF;
+            ascii.append(valor >= 32 && valor <= 126 ? (char) valor : '.');
+        }
+        return ascii.toString();
+    }
+
+    public boolean estaCompleta() {
+        return bytes.length == BYTES_POR_LINHA;
+    }
+
+    public String formatarLinha() {
+        return String.format("%-10s %-50s %s", getEndereco(), getHex(), getAscii());
+    }
+
+    public static String cabecalho() {
+        return String.format("%-10s %-50s %s", "ENDEREÇO", "HEX", "ASCII");
+    }
 }

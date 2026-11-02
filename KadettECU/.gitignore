@@ -1,0 +1,30 @@
+# Java / Maven
+target/
+build/
+*.class
+
+# Firmware: tudo que os Makefiles e o PlatformIO geram
+firmware/host/build/
+firmware/teste_placas/build/
+firmware/.pio/
+firmware/.vscode/
+*.o
+*.elf
+*.bin
+
+# Calibracao guardada pelo ecu_host (firmware em C no PC) e arquivos temporarios dos testes
+*.nvm
+kadettecu-bancada-*.txt
+
+# Editores e sistema
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+.DS_Store
+Thumbs.db
+
+# A jSerialComm em libs/ E versionada de proposito (o caminho sem Maven depende dela)
+!libs/jSerialComm-2.11.0.jar

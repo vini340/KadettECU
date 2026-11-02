@@ -1,0 +1,20 @@
+libs/ - bibliotecas de terceiros que o KadettECU usa
+
+jSerialComm-2.11.0.jar
+  O que e:      biblioteca Java de porta serial (USB/UART) para Windows, Linux e macOS, da Fazecast, Inc.
+                O jar ja traz as partes nativas (.dll, .so, .jnilib) de cada sistema: nao ha nada para instalar.
+  Para que:     e ela que fala com a placa (ESP32 ou Arduino Mega) pela porta USB. So a classe
+                kadettecu.comunicacao.PortaJSerialComm a usa; o resto do programa so conhece a interface PortaSerial,
+                e por isso o simulador, o firmware em C no PC e a placa de verdade sao trocaveis.
+  Origem:       https://github.com/Fazecast/jSerialComm  (versao 2.11.0, de abril de 2024)
+                Maven: com.fazecast:jSerialComm:2.11.0   (e a mesma que o pom.xml baixa)
+  Licenca:      dupla, Apache License 2.0 ou LGPL 3.0, a sua escolha (confira o texto oficial no repositorio acima,
+                que e a fonte correta; este arquivo e so um lembrete). Em ambas e permitido redistribuir o jar junto com
+                o programa, desde que o aviso de licenca acompanhe, e e por isso que este arquivo existe.
+  SHA-256 do jar que acompanha este projeto:
+                c61e6b567c395d5e35d942806998e45b296658cc14d24c1abb410ed0785ba6cd
+                (se preferir nao confiar neste arquivo, apague-o e baixe o mesmo jar do Maven Central ou do GitHub;
+                o programa nao muda)
+
+Se voce usa o Maven (pom.xml), esta pasta nao e necessaria: o Maven baixa a biblioteca sozinho. Ela existe para o
+caminho sem Maven (compilar.sh, executar.sh, compilar.bat, executar.bat), que so precisa do JDK.

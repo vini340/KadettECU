@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  pom.xml - build do KadettECU com Maven (opcional: dá para compilar e rodar só com o JDK, veja compilar.sh / compilar.bat).
+
+    mvn package                       gera target/kadettecu.jar e copia a jSerialComm para target/lib/
+    java -jar target/kadettecu.jar    abre o painel (a jSerialComm é achada pelo Class-Path do jar: deixe a pasta lib/ ao lado)
+    mvn -Ptestes test                 roda os 5 programas de teste (TesteKadettECU, TesteSistema, TesteInterface,
+                                      TesteIntegracaoFirmware e TesteSerialReal). O TesteInterface precisa de display; o
+                                      TesteIntegracaoFirmware, de gcc e make; o TesteSerialReal, de Linux ou macOS e de
+                                      Python 3 (sem isso ele avisa e termina sem testar nada)
+
+  ATENÇÃO: este pom.xml NÃO foi executado onde foi escrito (o Maven Central estava bloqueado no ambiente), só teve a
+  sintaxe conferida. O caminho sem Maven (compilar.sh / compilar.bat) foi testado de verdade. Se o Maven reclamar de
+  alguma versão de plugin, troque o número: nada aqui depende de recurso novo.
+
+  Os testes são programas com main() (sem JUnit), como o TesteKadettECU original, por isso o Surefire fica desligado e o
+  perfil "testes" os roda com o plugin exec.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.github.vini340</groupId>
+  <artifactId>kadettecu</artifactId>
+  <version>1.0</version>
+  <packaging>jar</packaging>
+  <name>KadettECU</name>
+  <description>Ecossistema de gerenciamento de injeção eletrônica (aplicativo Java + firmware C/C++) para um Kadett GL 2.0 1996.</description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- Java 11 como base: o código só usa o que existe a partir dele. Funciona com qualquer JDK 11 ou mais novo. -->
+    <maven.compiler.release>11</maven.compiler.release>
+    <jserialcomm.version>2.11.0</jserialcomm.version>
+    <kadettecu.mainClass>kadettecu.Inicio</kadettecu.mainClass>
+  </properties>
+
+  <dependencies>
+    <!-- Acesso à porta serial (USB) em Windows, Linux e macOS sem instalar nada além do jar. -->
+    <dependency>
+      <groupId>com.fazecast</groupId>
+      <artifactId>jSerialComm</artifactId>
+      <version>${jserialcomm.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>kadettecu</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+          <compilerArgs>
+            <arg>-Xlint:all</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+
+      <!-- Os testes são programas com main(), não testes JUnit: o Surefire não tem o que rodar. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+
+      <!-- O jar executável: Main-Class e o Class-Path apontando para lib/ (onde a jSerialComm é copiada). -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.1</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>${kadettecu.mainClass}</mainClass>
+              <addClasspath>true</addClasspath>
+              <classpathPrefix>lib/</classpathPrefix>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.7.1</version>
+        <executions>
+          <execution>
+            <id>copiar-dependencias</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/lib</outputDirectory>
+              <includeScope>runtime</includeScope>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <!-- mvn -Ptestes test: roda os cinco programas de teste, um por vez. Cada um termina com código 1 se algo falhar. -->
+    <profile>
+      <id>testes</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.3.0</version>
+            <configuration>
+              <executable>java</executable>
+              <classpathScope>test</classpathScope>
+              <workingDirectory>${project.basedir}</workingDirectory>
+            </configuration>
+            <executions>
+              <execution>
+                <id>teste-analisador</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <arguments>
+                    <argument>-classpath</argument>
+                    <classpath/>
+                    <argument>kadettecu.teste.TesteKadettECU</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>teste-sistema</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <arguments>
+                    <argument>-classpath</argument>
+                    <classpath/>
+                    <argument>kadettecu.teste.TesteSistema</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>teste-interface</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <arguments>
+                    <argument>-classpath</argument>
+                    <classpath/>
+                    <argument>kadettecu.teste.TesteInterface</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>teste-integracao-firmware</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <arguments>
+                    <argument>-classpath</argument>
+                    <classpath/>
+                    <argument>kadettecu.teste.TesteIntegracaoFirmware</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>teste-serial-real</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <arguments>
+                    <argument>-classpath</argument>
+                    <classpath/>
+                    <argument>kadettecu.teste.TesteSerialReal</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

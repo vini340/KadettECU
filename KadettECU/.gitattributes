@@ -1,0 +1,13 @@
+# Texto com fim de linha normalizado pelo Git; os scripts de shell e os Makefiles SEMPRE com LF (senao quebram no Linux/macOS)
+* text=auto
+*.sh text eol=lf
+Makefile text eol=lf
+*.mk text eol=lf
+*.py text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binarios: o Git nao mexe
+*.jar binary
+*.png binary
+*.zip binary
